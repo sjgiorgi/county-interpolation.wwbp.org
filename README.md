@@ -12,6 +12,11 @@ Input data has three types of columns:
 2. The second column is the **outcome** which you wich to interpolate.
 3. The remaining columns (the third through the last column) are the **feature** columns. These data points are used to create the interpolation space. For example, this can include geographic features (such as latitude and longitude coordinates) or socio-demographic features (such as education rates or population statistics like percent urban/rural).  
 
+### Example data
+
+We [include a CSV](https://github.com/sjgiorgi/county-interpolation.wwbp.org/blob/master/static/example_data.csv) with county-level personality (Big 5 agreeableness) and socio-demographic features as an example. County-level agreeableness is estimated from Twitter data and taken from this [paper](http://doi.org/10.1111/jopy.12674). 
+
+With the exception of agreeableness, this example data is the same data used in our original manuscript on interpolation with Gaussian Processes and social media data (paper TBA). While the original paper used life satisfaction as the outcome to be interpolated, due to restrictions on data sharing, we have replaced life satisfaction with agreeableness. 
 
 ## Interpolation process
 
