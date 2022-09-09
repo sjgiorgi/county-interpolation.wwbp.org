@@ -14,6 +14,10 @@
         <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="{{url_for('.static', filename='css/styles.css')}}" rel="stylesheet" />
+        <!-- Bootstrap core JS-->
+         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+ 
+            
     </head>
     <body>
         <!-- Navigation-->
@@ -48,10 +52,30 @@
                         <div class="text-center text-white">
                             <!-- Page heading-->
                             <h1 class="mb-5">Interpolate your spatial data</h1>
+                            <h5 class="mb-5">A free tool for interpolating missing spatial data using modern machine learning techniques.</h5>
                             
                             <form action="/" method="POST" enctype="multipart/form-data">
                                 <input type="file" id="file" name="file" class="form-control"><br />
-
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="geo-features" id="geo-features">
+                                    Add geographic features <a
+                                        tabindex="0"
+                                        role="button"
+                                        data-bs-toggle="popover"
+                                        title="Geography Features"
+                                        data-bs-content="Add the latitude and longitude coordinates of U.S. county cenroids as features in your interpolation space.
+                                        Available for all U.S. counties.">(?)</a>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="twitter-features" id="twitter-features">
+                                    Add Twitter language features <a
+                                        tabindex="0"
+                                        role="button"
+                                        data-bs-toggle="popover"
+                                        title="Twitter Features"
+                                        data-bs-content="Add U.S. county level language features to the interpolation space. We've reduced a set of 2,000 Twitter topics to 25 dimensions via PCA. These 25 dimensions will be added to your feature space.
+                                        Available for select U.S. counties only.">(?)</a>
+                                </div><p>
                                 <div class="col-auto"><button class="btn btn-warning btn-lg" type="submit">Upload</button></div>
                             </form>
                         </div>
@@ -68,7 +92,7 @@
                         <h2>Formatting Your Data</h2>
                         <p></p>
                         <img class="img-fluid" src="{{url_for('.static', filename='assets/img/data_formatting.png')}}" alt="">
-                        <p><br><a href="{{url_for('.static', filename='example_data.csv')}}"  style="color:black;">Download</a> example data, which you can use to interpolate <a href="http://doi.org/10.1111/jopy.12674"  style="color:black;">county-level personality</a> (agreeableness) from income and education.
+                        <p><br><a href="{{url_for('.static', filename='example_data.csv')}}"  style="color:black;">Download</a> example data, which you can use to interpolate <a href="http://doi.org/10.1111/jopy.12674"  style="color:black;">county-level personality</a> (agreeableness, as estimated from Twitter data) from socio-demographics.
                     </div>
                     
                     <div class="col-lg-6 order-lg-2 my-auto showcase-text">
@@ -78,7 +102,7 @@
                         </p>
                         <br>
                         <p class="lead mb-0">
-                            This tool then trains a Gaussian Process model and interpolates the outcome for each row with missing data. It returns a CSV with the interpolated value (i.e., the mean of the predictive distribution) as well as the standard deviation. 
+                            This tool then trains a Gaussian Process model and interpolates the outcome for each row with missing data. It returns a CSV with the interpolated value (i.e., the mean of the predictive distribution) as well as the standard deviation. The final optimized lengthscale parameter is added to the filename of the returned CSV. 
                         </p>
                     </div>
                 </div>
@@ -102,7 +126,7 @@
                             <li>Powered by <a href="https://gpytorch.ai/" style="color:black;">GPytorch</a>, a highly efficient and modular implementation of Gaussian Processes.</li>
                             <li>Using a modern machine learning framework, the GP hyperparameters are learned from the training data, as opposed to chosen a priori.</li>
                             <li>Full technical details are available <a href="https://github.com/sjgiorgi/county-interpolation.wwbp.org" style="color:black;">here</a> or you can read our paper <a href="" style="color:black;">here</a>.</li>
-                            <li>Try it with this <a href="{{url_for('.static', filename='example_data.csv')}}d" style="color:black;">sample data</a> .</li>
+                            <li>Try it with this <a href="{{url_for('.static', filename='example_data.csv')}}" style="color:black;">sample data</a> .</li>
                         </ul>
                     </div>
                     <!-- <div class="col-lg-4">
@@ -122,29 +146,50 @@
                 <div class="row g-0" id="about">
                     <div class="col-lg-6 order-lg-1 my-auto showcase-text">
                         <h2>Citation</h2>
-                        <p class="lead mb-0">Please cite this tool as follows: <p></p>
-                            <pre>@inproceedings{blah,
-    title = "blahblahblahblahblahblah",
-    author = "blahblahblah  and
-        blahblahblah  and
-        blahblahblah",
-    booktitle = "blah blah blah blah blah",
-    month = blah,
-    year = "2022",
-    address = "blahblahblahblah",
-    publisher = "blahblahblahblah",
-    url = "blahblahblahblah",
-    pages = "blah--blah"
-}</pre>
-                        </p>
+                          <div class="container">
+                            Please cite this tool as follows:
+                            <ul class="nav nav-tabs">
+                              <li class="nav-item">
+                                <a class="nav-link active" href="#bib-contents" id="bib-tab" data-bs-toggle="tab" style="color:black;">BIB</a>
+                              </li>
+                              <li class="nav-item">
+                                <a class="nav-link" href="#apa-contents" id="apa-tab" data-bs-toggle="tab" style="color:black;">APA</a>
+                              </li>
+                              <li class="nav-item">
+                                <a class="nav-link" href="#mla-contents" id="mla-tab" data-bs-toggle="tab" style="color:black;">MLA</a>
+                              </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="bib-contents" class="tab-pane active">
+                                    
+                                    <pre>@inproceedings{giorgi2022interpolation,
+        title={County Interpolation },
+        author={Giorgi, Salvatore and Eichstaedt, Johannes C and Gardner, Jacob R and Schwartz, H Andrew  and Ungar, Lyle},
+        url={county-interpolation.wwbp.org},
+}
+</pre>
+                                </div>
+                                <div id="apa-contents" class="tab-pane">
+
+                                    <pre>Giorgi, S., Eichstaedt, J.C., Gardner, J.R., Schwartz, H.A., & Ungar, L. (2022). County Interpolation with Gaussian Processes. Retrieved from http://county-interpolation.wwbp.org.
+
+                                    </pre>
+                                </div>
+                                <div id="mla-contents" class="tab-pane">
+                                    <pre>Giorgi, S., Eichstaedt, J.C., Gardner, J.R., Schwartz, H.A., & Ungar, L. (2022). County Interpolation with Gaussian Processes. Retrieved from http://county-interpolation.wwbp.org.
+
+                                    </pre>
+                                </div>
+                              
+                            </div>
+                          </div>
                     </div>
                     <div class="col-lg-6 my-auto showcase-text">
                         <h2>Who we are</h2>
                         <p class="lead mb-0">This resource is provided by <a href="http://salvatoregiorgi.com/" style="color:black;">Salvatore Giorgi</a>, 
                             <a href="https://jeichstaedt.com/" style="color:black;">Johannes C. Eichstaedt</a>, 
-                            <a href="https://www.preotiuc.ro/" style="color:black;">Daniel Preotiuc-Pietro</a>, 
                             <a href="https://jacobrgardner.github.io/" style="color:black;">Jacob R. Gardner</a>, 
-                            <a href="https://www3.cs.stonybrook.edu/~has/" style="color:black;">H. Andrew Schwartz</a>, and <a href="https://www.cis.upenn.edu/~ungar/" style="color:black;">Lyle H. Ungar</a> of the University of Pennsylvania, Stanford University, Bloomberg, and Stonybrook University. </p>
+                            <a href="https://www3.cs.stonybrook.edu/~has/" style="color:black;">H. Andrew Schwartz</a>, and <a href="https://www.cis.upenn.edu/~ungar/" style="color:black;">Lyle H. Ungar</a> of the University of Pennsylvania, Stanford University, and Stonybrook University. </p>
                             <br>
                             <p class="lead mb-0">Please send comments, suggestions, and bug reports to sal.giorgi@sas.upenn.edu.</p>
                     </div>
@@ -175,10 +220,15 @@
                 </div>
             </div>
         </footer>
-        <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        
         <!-- Core theme JS-->
         <script src="{{url_for('.static', filename='js/scripts.js')}}"></script>
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+        <script>
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+            var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+              return new bootstrap.Popover(popoverTriggerEl)
+            })
+            </script>
     </body>
 </html>

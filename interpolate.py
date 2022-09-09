@@ -10,7 +10,7 @@ import gpytorch
 from sklearn.preprocessing import StandardScaler
 
 cnty_str = 'FIPS'
-training_iter = 500
+training_iter = 200
 learning_rate = 0.1
 
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -24,8 +24,12 @@ class ExactGPModel(gpytorch.models.ExactGP):
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
-def interpolate_csv(filename):
+def interpolate_csv(filename, add_geo, add_twitter):
     df = csv_to_dataframe(filename)
+    if add_geo:
+        df = add_features(df, 'geo')
+    if add_twitter:
+        df = add_features(df, 'twitter')
 
     X_scaler, y_scaler = StandardScaler(), StandardScaler()
 
@@ -79,6 +83,11 @@ def interpolate_csv(filename):
         # Calc loss and backprop gradients
         loss = -mll(output, y_train)
         loss.backward()
+        print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
+                                i + 1, training_iter, loss.item(),
+                                model.covar_module.base_kernel.lengthscale.item(),
+                                model.likelihood.noise.item()
+                            ))
 
         optimizer.step()
     
@@ -90,12 +99,14 @@ def interpolate_csv(filename):
     y_interpolations = observed_pred.mean.numpy()
     y_std = observed_pred.stddev.detach().numpy()
     
-    output_file = write_to_csv(y_column_name, counties_interpolate, y_interpolations, y_std)
+    lengthscale = model.covar_module.base_kernel.lengthscale.item()
+
+    output_file = write_to_csv(y_column_name, counties_interpolate, y_interpolations, y_std, lengthscale)
     return output_file
 
-def write_to_csv(column_name, counties, interpolations, std_devs):
+def write_to_csv(column_name, counties, interpolations, std_devs, lengthscale):
     header = [cnty_str, column_name + "_interpolated", column_name + "_stddev"]
-    output_file = "interpolations.csv"
+    output_file = "interpolations_ls%.3f.csv" % lengthscale
     
     with open(os.path.join('output', output_file), 'w') as f:
         writer = csv.writer(f)
@@ -108,3 +119,29 @@ def write_to_csv(column_name, counties, interpolations, std_devs):
 def csv_to_dataframe(filename):
     df = pd.read_csv(filename)
     return df
+
+def add_features(df, feature_type):
+    if feature_type == "geo":
+        filename = "features/geo_features.csv"
+    elif feature_type == "twitter":
+        filename = "features/twitter_features.csv"
+    df_feat = pd.read_csv(filename)
+    df_feat['FIPS'] = df_feat['FIPS'].astype(str).str.rjust(5, '0')
+    df_feat = df_feat.set_index('FIPS')
+
+    df_index_name = df.columns[0]
+    df['FIPS'] = df[df_index_name].astype(str).str.rjust(5, '0')
+    df = df.set_index(df_index_name)
+    if df_index_name != cnty_str:
+        df = df.drop(columns=[df_index_name])
+    
+    df_joined = pd.concat([df, df_feat], axis=1)
+    print(df_joined.columns)
+    number_of_rows = df_joined.shape[0]
+    if number_of_rows >= df_feat.shape[0] + df.shape[0]:
+        # join did not work
+        print("DID NOT WORK", number_of_rows, df_feat.shape,  df.shape, df_joined.shape)
+        print(df_joined.head())
+        return df.reset_index()
+    else:
+        return df_joined.reset_index()

@@ -17,6 +17,14 @@ def create_app():
     @app.route('/', methods=["GET","POST"])
     def upload():
         if request.method == 'POST':
+            add_geo, add_twitter = False, False
+            if request.form.get('geo-features'):
+                add_geo = True
+                print("ADDING GEO")
+            if request.form.get('twitter-features'):
+                add_twitter = True
+                print("ADDING TWITTER")
+
             file = request.files['file']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
@@ -24,7 +32,7 @@ def create_app():
                 save_location = os.path.join('input', new_filename)
                 file.save(save_location)
 
-                output_file = interpolate_csv(save_location)
+                output_file = interpolate_csv(save_location, add_geo, add_twitter)
                 return send_from_directory('output', output_file)
 
         return render_template('index.html')
