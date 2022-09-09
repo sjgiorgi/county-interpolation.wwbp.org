@@ -136,12 +136,10 @@ def add_features(df, feature_type):
         df = df.drop(columns=[df_index_name])
     
     df_joined = pd.concat([df, df_feat], axis=1)
-    print(df_joined.columns)
+
     number_of_rows = df_joined.shape[0]
     if number_of_rows >= df_feat.shape[0] + df.shape[0]:
         # join did not work
-        print("DID NOT WORK", number_of_rows, df_feat.shape,  df.shape, df_joined.shape)
-        print(df_joined.head())
         return df.reset_index()
     else:
         return df_joined.reset_index()

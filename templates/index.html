@@ -61,22 +61,26 @@
                                     Add geographic features <a
                                         tabindex="0"
                                         role="button"
+                                        data-bs-trigger="focus"
                                         data-bs-toggle="popover"
                                         title="Geography Features"
                                         data-bs-content="Add the latitude and longitude coordinates of U.S. county cenroids as features in your interpolation space.
-                                        Available for all U.S. counties.">(?)</a>
+                                        <p><br>Available for all U.S. counties.">(?)</a>
                                 </div>
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="checkbox" name="twitter-features" id="twitter-features">
                                     Add Twitter language features <a
                                         tabindex="0"
                                         role="button"
+                                        html="true"
+                                        data-bs-trigger="focus"
                                         data-bs-toggle="popover"
                                         title="Twitter Features"
-                                        data-bs-content="Add U.S. county level language features to the interpolation space. We've reduced a set of 2,000 Twitter topics to 25 dimensions via PCA. These 25 dimensions will be added to your feature space.
-                                        Available for select U.S. counties only.">(?)</a>
+                                        data-bs-content="Add U.S. county level language features to the interpolation space. We've reduced a set of <a href='https://github.com/wwbp/county_tweet_lexical_bank'>2,000 Twitter topics</a> to 25 dimensions via PCA. These 25 dimensions will be added to your feature space.
+                                        <p><br>Available for select U.S. counties only.">(?)</a>
                                 </div><p>
                                 <div class="col-auto"><button class="btn btn-warning btn-lg" type="submit">Upload</button></div>
+
                             </form>
                         </div>
                     </div>
@@ -161,7 +165,7 @@
                             </ul>
                             <div class="tab-content">
                                 <div id="bib-contents" class="tab-pane active">
-                                    
+
                                     <pre>@inproceedings{giorgi2022interpolation,
         title={County Interpolation },
         author={Giorgi, Salvatore and Eichstaedt, Johannes C and Gardner, Jacob R and Schwartz, H Andrew  and Ungar, Lyle},
@@ -227,8 +231,12 @@
         <script>
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
             var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-              return new bootstrap.Popover(popoverTriggerEl)
+              return new bootstrap.Popover(popoverTriggerEl,{html: true})
             })
+            var popover = new bootstrap.Popover(document.querySelector('.popover-dismiss'), {
+                trigger: 'focus'
+            })
+
             </script>
     </body>
 </html>
