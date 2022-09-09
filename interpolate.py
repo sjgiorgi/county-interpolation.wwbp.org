@@ -37,6 +37,8 @@ def interpolate_csv(filename, add_geo, add_twitter):
     y_column_name = df.columns[1]
     x_columns_names = df.columns[2:]
 
+    
+
     # get training data and standardize
     df_train = df.dropna()
     X_train = df_train[x_columns_names].to_numpy()
@@ -121,6 +123,15 @@ def csv_to_dataframe(filename):
     return df
 
 def clean_uploaded_data(df):
+    # remove rows where spatial identifier is null
+    df = df[~df[df.columns[0]].isnull()]
+
+    # replace NA with empty strings
+
+    # convert all columns to float
+    for c in df.columns[1:]:
+        df[c] = pd.to_numeric(df[c])
+
     return df
 
 def add_features(df, feature_type):
