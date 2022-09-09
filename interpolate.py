@@ -120,6 +120,9 @@ def csv_to_dataframe(filename):
     df = pd.read_csv(filename)
     return df
 
+def clean_uploaded_data(df):
+    return df
+
 def add_features(df, feature_type):
     if feature_type == "geo":
         filename = "features/geo_features.csv"
