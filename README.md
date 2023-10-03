@@ -54,6 +54,20 @@ The latitude and longitude coordinates of U.S. county centroids are available as
 
 These features are available for 3,143 U.S. counties.
 
+## Frequently Asked Questions (FAQ)
+
+1. Does this tool work for non-U.S. county data?
+
+Yes, this tool will work for any data. The tool simply builds a Gaussian Process model over the supplied data, and is thus agnostic to the spatial layout of the data. If you would like this model to consider physical space then you must supply this measure in the uploaded CSV. For example, this can be latitude and longitude coordinates of the centroid of your spatial units.  
+
+2. Does this tool work for larger spatial units, such as U.S. states?
+
+We recommend this tool for smaller spatial units for which you have a reasonable number of observations. Larger spatial units present a problem in that there are fewer observations, for example, 50 U.S. states as opposed to over 3,000 U.S. counties. This means there are less observations used to train the Gaussian Process model. Given a smaller number of observations, the Gaussian Process model may fail to converge and, thus, the interpolations may be noisy. 
+
+3. Does the FIPS code need a specific formatting in order to use the additional features packaged with this tool (Twitter topics or latitude/longitude coordinates)?
+
+The FIPS code in the first column can be either a string (e.g., '42101') or numeric (e.g., 42101). The backend will convert this to a string and pad preceeding zeros as needed (since FIPS codes are 5 digits). For example, the numeric FIPS code 1001 will be converted to the string '01001'. Deviations from this formating with cause the backend to fail. 
+
 
 ## Citation
 
@@ -61,9 +75,9 @@ If you use this tool in your work please cite the following [paper]():
 
 ```
 @inproceedings{giorgi2022interpolation,
-        title={County Interpolation},
-        author={Giorgi, Salvatore and Eichstaedt, Johannes C and Gardner, Jacob R and Schwartz, H Andrew  and Ungar, Lyle},
-        url={county-interpolation.wwbp.org},
+    title={County Interpolation},
+    author={Giorgi, Salvatore and Eichstaedt, Johannes C and Gardner, Jacob R and Schwartz, H Andrew and Ungar, Lyle},
+    url={county-interpolation.wwbp.org},
 }
 ```
 

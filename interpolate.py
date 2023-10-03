@@ -10,8 +10,8 @@ import gpytorch
 from sklearn.preprocessing import StandardScaler
 
 cnty_str = 'FIPS'
-training_iter = 200
-learning_rate = 0.1
+training_iter = 500
+learning_rate = 0.001
 
 class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood):
@@ -25,86 +25,91 @@ class ExactGPModel(gpytorch.models.ExactGP):
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
 def interpolate_csv(filename, add_geo, add_twitter):
-    df = csv_to_dataframe(filename)
-    if add_geo:
-        df = add_features(df, 'geo')
-    if add_twitter:
-        df = add_features(df, 'twitter')
+    try:
+        df = csv_to_dataframe(filename)
+        if add_geo:
+            df = add_features(df, 'geo')
+        if add_twitter:
+            df = add_features(df, 'twitter')
 
-    X_scaler, y_scaler = StandardScaler(), StandardScaler()
+        X_scaler, y_scaler = StandardScaler(), StandardScaler()
 
-    spatial_unit_name = df.columns[0]
-    y_column_name = df.columns[1]
-    x_columns_names = df.columns[2:]
+        spatial_unit_name = df.columns[0]
+        y_column_name = df.columns[1]
+        x_columns_names = df.columns[2:]
 
-    
-
-    # get training data and standardize
-    df_train = df.dropna()
-    X_train = df_train[x_columns_names].to_numpy()
-    y_train = df_train[y_column_name].to_numpy().reshape(-1, 1)
-
-    X_train = X_scaler.fit_transform(X_train)
-    y_train = y_scaler.fit_transform(y_train)
-
-    counties_train = list(df_train[spatial_unit_name].values)
-
-    # get data to interpolate and standardize
-    df_interpolate = df[df[y_column_name].isnull()]
-    X_interpolate = df_interpolate[x_columns_names].to_numpy()
-    X_interpolate = X_scaler.transform(X_interpolate)
-
-    counties_interpolate = list(df_interpolate[spatial_unit_name].values)
-
-    # convert to tensors
-    X_train = torch.from_numpy(X_train).float()
-    y_train = torch.from_numpy(np.array([float(y[0]) for y in y_train])).float()
-    
-    X_interpolate = torch.from_numpy(X_interpolate).float()
-
-    # train model
-    likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = ExactGPModel(X_train, y_train, likelihood)
-
-    model.train()
-    likelihood.train()
-
-    # Use the adam optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)  # Includes GaussianLikelihood parameters
-
-    # "Loss" for GPs - the marginal log likelihood
-    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-
-    for i in range(training_iter):
-        # Zero gradients from previous iteration
-        optimizer.zero_grad()
         
-        # Output from model
-        output = model(X_train)
+
+        # get training data and standardize
+        df_train = df.dropna()
+        X_train = df_train[x_columns_names].to_numpy()
+        y_train = df_train[y_column_name].to_numpy().reshape(-1, 1)
+
+        X_train = X_scaler.fit_transform(X_train)
+        y_train = y_scaler.fit_transform(y_train)
+
+        counties_train = list(df_train[spatial_unit_name].values)
+
+        # get data to interpolate and standardize
+        df_interpolate = df[df[y_column_name].isnull()]
+        df_interpolate = df_interpolate[[spatial_unit_name]+list(x_columns_names)].dropna()
         
-        # Calc loss and backprop gradients
-        loss = -mll(output, y_train)
-        loss.backward()
-        print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
-                                i + 1, training_iter, loss.item(),
-                                model.covar_module.base_kernel.lengthscale.item(),
-                                model.likelihood.noise.item()
-                            ))
+        X_interpolate = df_interpolate[x_columns_names].to_numpy()
+        X_interpolate = X_scaler.transform(X_interpolate)
 
-        optimizer.step()
-    
-    model.eval()
-    likelihood.eval()
+        counties_interpolate = list(df_interpolate[spatial_unit_name].values)
 
-    with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        observed_pred = likelihood(model(X_interpolate))
-    y_interpolations = observed_pred.mean.numpy()
-    y_std = observed_pred.stddev.detach().numpy()
-    
-    lengthscale = model.covar_module.base_kernel.lengthscale.item()
+        # convert to tensors
+        X_train = torch.from_numpy(X_train).float()
+        y_train = torch.from_numpy(np.array([float(y[0]) for y in y_train])).float()
+        
+        X_interpolate = torch.from_numpy(X_interpolate).float()
 
-    output_file = write_to_csv(y_column_name, counties_interpolate, y_interpolations, y_std, lengthscale)
-    return output_file
+        # train model
+        likelihood = gpytorch.likelihoods.GaussianLikelihood()
+        model = ExactGPModel(X_train, y_train, likelihood)
+
+        model.train()
+        likelihood.train()
+
+        # Use the adam optimizer
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)  # Includes GaussianLikelihood parameters
+
+        # "Loss" for GPs - the marginal log likelihood
+        mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+
+        for i in range(training_iter):
+            # Zero gradients from previous iteration
+            optimizer.zero_grad()
+            
+            # Output from model
+            output = model(X_train)
+            
+            # Calc loss and backprop gradients
+            loss = -mll(output, y_train)
+            loss.backward()
+            print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
+                                    i + 1, training_iter, loss.item(),
+                                    model.covar_module.base_kernel.lengthscale.item(),
+                                    model.likelihood.noise.item()
+                                ))
+
+            optimizer.step()
+        
+        model.eval()
+        likelihood.eval()
+
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            observed_pred = likelihood(model(X_interpolate))
+        y_interpolations = observed_pred.mean.numpy()
+        y_std = observed_pred.stddev.detach().numpy()
+        
+        lengthscale = model.covar_module.base_kernel.lengthscale.item()
+
+        output_file = write_to_csv(y_column_name, counties_interpolate, y_interpolations, y_std, lengthscale)
+        return output_file
+    except:
+        return ""
 
 def write_to_csv(column_name, counties, interpolations, std_devs, lengthscale):
     header = [cnty_str, column_name + "_interpolated", column_name + "_stddev"]

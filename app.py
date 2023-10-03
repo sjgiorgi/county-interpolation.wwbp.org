@@ -1,15 +1,31 @@
+
 import os
 
-from flask import Flask, request, render_template, redirect, url_for, send_from_directory
+from flask import Flask, request, current_app, render_template, redirect, url_for, \
+    send_from_directory, make_response
 from werkzeug.utils import secure_filename
+
 from datetime import datetime
+
 from interpolate import interpolate_csv
+from email_tools import send_email, save_email
+
+from multiprocessing import Process
 
 ALLOWED_EXTENSIONS = set(['csv'])
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def wrap_process(save_location, add_geo, add_twitter, email_address):
+    print("Doing this!")
+    output_file = interpolate_csv(save_location, add_geo, add_twitter)
+    error = False
+    if isinstance(output_file, str) and output_file == "":
+        error = True
+    send_email(email_address, output_file, error)
+    return ""
 
 def create_app():
     app = Flask(__name__)
@@ -25,6 +41,9 @@ def create_app():
                 add_twitter = True
                 print("ADDING TWITTER")
 
+            email_address = request.form['email']
+            save_email(email_address)
+
             file = request.files['file']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
@@ -32,11 +51,21 @@ def create_app():
                 save_location = os.path.join('input', new_filename)
                 file.save(save_location)
 
-                output_file = interpolate_csv(save_location, add_geo, add_twitter)
-                return send_from_directory('output', output_file)
+                heavy_process = Process(  # Create a daemonic process with heavy "my_func"
+                    target=wrap_process,
+                    args=[save_location, add_geo, add_twitter, email_address],
+                    daemon=True
+                )
+                heavy_process.start()
 
-        return render_template('index.html')
-        
+                # output_file = interpolate_csv(save_location, add_geo, add_twitter)
+
+                # send_email(email_address, output_file)
+                # return send_from_directory('output', output_file)
+                return render_template('index.html', flash_message="True")
+
+        return render_template('index.html', flash_message="False")
+
     return app
 
 app = create_app()

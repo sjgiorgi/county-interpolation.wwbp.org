@@ -3,9 +3,9 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content="" />
+        <meta name="description" content="A free tool for interpolating spatial data from high dimensional features using a modern implementation of Gaussian Processes, via the PyTorch machine learning framework." />
         <meta name="author" content="" />
-        <title>County Interpolation</title>
+        <title>Spatial Interpolation with Gaussian Processes and Social Media data</title>
         <!-- Favicon-->
         <link rel="icon" type="image/x-icon" href="{{url_for('.static', filename='assets/favicon.ico')}}" />
         <!-- Bootstrap icons-->
@@ -19,7 +19,7 @@
  
             
     </head>
-    <body>
+    <body onload="flashMessage()">
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
             <div class="container">
@@ -55,7 +55,7 @@
                             <h5 class="mb-5">A free tool for interpolating missing spatial data using modern machine learning techniques.</h5>
                             
                             <form action="/" method="POST" enctype="multipart/form-data">
-                                <input type="file" id="file" name="file" class="form-control"><br />
+                                <input type="file" id="file" name="file" class="form-control" required><br />
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="checkbox" name="geo-features" id="geo-features">
                                     Add geographic features <a
@@ -77,8 +77,15 @@
                                         data-bs-toggle="popover"
                                         title="Twitter Features"
                                         data-bs-content="Add U.S. county level language features to the interpolation space. We've reduced a set of <a href='https://github.com/wwbp/county_tweet_lexical_bank'>2,000 Twitter topics</a> to 25 dimensions via PCA. These 25 dimensions will be added to your feature space.
-                                        <p><br>Available for select U.S. counties only.">(?)</a>
-                                </div><p>
+                                        <p><br>Available for select U.S. counties only.
+                                        <p><br><b>Does NOT work</b> for example data included with this app.">(?)</a>
+                                </div>
+                                <p>
+                                <div class="form-check form-check-inline">
+                                    <input type="email" id="email" name="email" placeholder="Enter your email" class="form-control" required> 
+                                </div>
+                                <p>
+                                    
                                 <div class="col-auto"><button class="btn btn-warning btn-lg" type="submit">Upload</button></div>
 
                             </form>
@@ -101,7 +108,7 @@
                     
                     <div class="col-lg-6 order-lg-2 my-auto showcase-text">
                         <h2>How to Use</h2>
-                        <p class="lead mb-0">Upload a .cvs file in which each row is a single spatial unit (e.g., U.S. county). 
+                        <p class="lead mb-0">Upload a .csv file in which each row is a single spatial unit (e.g., U.S. county). 
                             The <span class="text-primary">first column must be an ID for that entry</span> (e.g., county FIPS code), and the <span class="text-danger">second column must be the variable you wish to interpolate</span>. All other <span style="color:purple;">columns will be used to train the Gaussian Process model used for interpolation</span>.
                         </p>
                         <br>
@@ -138,7 +145,7 @@
                             <li>Powered by <a href="https://gpytorch.ai/" style="color:black;">GPytorch</a>, a highly efficient and modular implementation of Gaussian Processes.</li>
                             <li>Using a modern machine learning framework, the GP hyperparameters are learned from the training data, as opposed to chosen a priori.</li>
                             <li>Full technical details are available <a href="https://github.com/sjgiorgi/county-interpolation.wwbp.org" style="color:black;">here</a> or you can read our paper <a href="" style="color:black;">here</a>.</li>
-                            <li>Try it with this <a href="{{url_for('.static', filename='example_data.csv')}}" style="color:black;">sample data</a> .</li>
+                            <li>Try interpolating U.S. county Agreeableness with this <a href="{{url_for('.static', filename='example_data.csv')}}" style="color:black;">sample data</a>. Note, this data does not work with the Twitter language features.</li>
                         </ul>
                     </div>
                     <!-- <div class="col-lg-4">
@@ -245,6 +252,13 @@
                 trigger: 'focus'
             })
 
-            </script>
+        </script>
+        <script>
+            function flashMessage() {
+              if ("{{ flash_message }}" == "True") {
+                alert("Thank you for using our tool! An email will be sent when the interpolations are finished.");
+              }
+            }
+          </script>
     </body>
 </html>
