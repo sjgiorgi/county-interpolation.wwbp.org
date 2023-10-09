@@ -22,9 +22,12 @@ def wrap_process(save_location, add_geo, add_twitter, email_address):
     print("Doing this!")
     output_file = interpolate_csv(save_location, add_geo, add_twitter)
     error = False
-    if isinstance(output_file, str) and output_file == "":
+    error_number = 0
+    if isinstance(output_file, int):
         error = True
-    send_email(email_address, output_file, error)
+        error_number = output_file
+        print("ERROR", error, error_number)
+    send_email(email_address, output_file, error, error_number)
     return ""
 
 def create_app():

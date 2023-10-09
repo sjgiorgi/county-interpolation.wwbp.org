@@ -24,21 +24,41 @@ class ExactGPModel(gpytorch.models.ExactGP):
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
+### Errors:
+# -1: could not convert csv
+# -2: could not add geo features
+# -3: could not add twitter features
+# -4: could not create train/test split
+# -5: model training error
+# -6: could not evaluate trained model
+# -7: could not create output file
 def interpolate_csv(filename, add_geo, add_twitter):
     try:
         df = csv_to_dataframe(filename)
+    except Exception as e: 
+        print("error", e)
+        return -1
+    
+    try:
         if add_geo:
             df = add_features(df, 'geo')
+    except Exception as e: 
+        print("error", e)
+        return -2
+    
+    try:
         if add_twitter:
             df = add_features(df, 'twitter')
-
+    except Exception as e: 
+        print("error", e)
+        return -3
+    
+    try:
         X_scaler, y_scaler = StandardScaler(), StandardScaler()
 
         spatial_unit_name = df.columns[0]
         y_column_name = df.columns[1]
         x_columns_names = df.columns[2:]
-
-        
 
         # get training data and standardize
         df_train = df.dropna()
@@ -64,7 +84,12 @@ def interpolate_csv(filename, add_geo, add_twitter):
         y_train = torch.from_numpy(np.array([float(y[0]) for y in y_train])).float()
         
         X_interpolate = torch.from_numpy(X_interpolate).float()
-
+    
+    except Exception as e: 
+        print("error", e)
+        return -4
+    
+    try:
         # train model
         likelihood = gpytorch.likelihoods.GaussianLikelihood()
         model = ExactGPModel(X_train, y_train, likelihood)
@@ -93,23 +118,31 @@ def interpolate_csv(filename, add_geo, add_twitter):
                                     model.covar_module.base_kernel.lengthscale.item(),
                                     model.likelihood.noise.item()
                                 ))
-
             optimizer.step()
         
         model.eval()
         likelihood.eval()
-
+    except Exception as e: 
+        print("error", e)
+        return -5
+    
+    try:
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
             observed_pred = likelihood(model(X_interpolate))
         y_interpolations = observed_pred.mean.numpy()
         y_std = observed_pred.stddev.detach().numpy()
         
         lengthscale = model.covar_module.base_kernel.lengthscale.item()
+    except Exception as e: 
+        print("error", e)
+        return -6
 
+    try:
         output_file = write_to_csv(y_column_name, counties_interpolate, y_interpolations, y_std, lengthscale)
         return output_file
-    except:
-        return ""
+    except Exception as e: 
+        print("error", e)
+        return -7
 
 def write_to_csv(column_name, counties, interpolations, std_devs, lengthscale):
     header = [cnty_str, column_name + "_interpolated", column_name + "_stddev"]
@@ -150,7 +183,7 @@ def add_features(df, feature_type):
 
     df_index_name = df.columns[0]
     df['FIPS'] = df[df_index_name].astype(str).str.rjust(5, '0')
-    df = df.set_index(df_index_name)
+    df = df.set_index('FIPS')
     if df_index_name != cnty_str:
         df = df.drop(columns=[df_index_name])
     
