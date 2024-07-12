@@ -71,13 +71,17 @@ The FIPS code in the first column can be either a string (e.g., '42101') or nume
 
 ## Citation
 
-If you use this tool in your work please cite the following [paper]():
+If you use this tool in your work please cite the following [paper](https://doi.org/10.1016/j.cresp.2023.100159):
 
 ```
-@inproceedings{giorgi2022interpolation,
-    title={County Interpolation},
-    author={Giorgi, Salvatore and Eichstaedt, Johannes C and Gardner, Jacob R and Schwartz, H Andrew and Ungar, Lyle},
-    url={county-interpolation.wwbp.org},
+@article{giorgi2023filling,
+  title={Filling in the white space: Spatial interpolation with Gaussian processes and social media data},
+  author={Giorgi, Salvatore and Eichstaedt, Johannes C and Preo{\c{t}}iuc-Pietro, Daniel and Gardner, Jacob R and Schwartz, H Andrew and Ungar, Lyle H},
+  journal={Current research in ecological and social psychology},
+  volume={5},
+  pages={100159},
+  year={2023},
+  publisher={Elsevier}
 }
 ```
 
